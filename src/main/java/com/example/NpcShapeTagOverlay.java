@@ -32,7 +32,7 @@ public class NpcShapeTagOverlay extends Overlay
             this.config = config;
             setPosition(OverlayPosition.DYNAMIC);
             // "ABOVE_WIDGETS" forces it to draw over the game UI and Sprites
-            setLayer(OverlayLayer.UNDER_WIDGETS); 
+            setLayer(OverlayLayer.ABOVE_WIDGETS); 
             // "HIGH" priority ensures it draws after other plugins
             setPriority(OverlayPriority.HIGH);
         }
