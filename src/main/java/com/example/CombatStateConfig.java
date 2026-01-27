@@ -35,4 +35,7 @@ public interface CombatStateConfig extends Config
 
     @ConfigItem(keyName = "groundItemNames", name = "Ground Items", description = "Ground items to check for", position = 7)
     default String groundItemNames() { return "Coins,Bones"; }
+
+    @ConfigItem(keyName = "overlayScale", name = "Overlay Scale", description = "Adjust the size of the status window (50% to 200%)", position = 8)
+    default int overlayScale() { return 100; }
 }
