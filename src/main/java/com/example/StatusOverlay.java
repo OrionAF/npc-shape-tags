@@ -8,10 +8,7 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 import javax.inject.Inject;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +17,12 @@ public class StatusOverlay extends Overlay
     private final Client client;
     private final CombatStateConfig config;
 
-    private static final int CELL_WIDTH = 100;
-    private static final int CELL_HEIGHT = 45;
-    private static final int BOX_SIZE = 15;
+    // Base dimensions (at 100% scale)
+    private static final int BASE_CELL_WIDTH = 100;
+    private static final int BASE_CELL_HEIGHT = 45;
+    private static final int BASE_BOX_SIZE = 15;
+    private static final int BASE_FONT_SIZE = 12;
+
     private static final Color COLOR_TRUE = Color.WHITE;
     private static final Color COLOR_FALSE = Color.RED;
     private static final Color BG_COLOR = new Color(0, 0, 0, 150);
@@ -42,6 +42,17 @@ public class StatusOverlay extends Overlay
         Player localPlayer = client.getLocalPlayer();
         if (localPlayer == null) return null;
 
+        // Calculate Scale
+        double scale = config.overlayScale() / 100.0;
+        int cellWidth = (int) (BASE_CELL_WIDTH * scale);
+        int cellHeight = (int) (BASE_CELL_HEIGHT * scale);
+        int boxSize = (int) (BASE_BOX_SIZE * scale);
+        int fontSize = (int) (BASE_FONT_SIZE * scale);
+
+        // Update Font based on scale
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, fontSize));
+
+        // --- Logic Checks ---
         boolean inCombat = localPlayer.getInteracting() != null;
         boolean isAttacking = localPlayer.getAnimation() != -1 && localPlayer.getAnimation() != 808;
         boolean correctTarget = isAttackingCorrectTarget(localPlayer);
@@ -50,7 +61,9 @@ public class StatusOverlay extends Overlay
         boolean hasFood = checkInventoryFor(config.foodNames());
         boolean prayerAbove50 = client.getBoostedSkillLevel(Skill.PRAYER) > (client.getRealSkillLevel(Skill.PRAYER) / 2);
         boolean outOfPrayer = client.getBoostedSkillLevel(Skill.PRAYER) == 0;
-        boolean isIdle = localPlayer.getAnimation() == -1 && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation() && localPlayer.getInteracting() == null;
+        boolean isIdle = localPlayer.getAnimation() == -1 
+            && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation()
+            && localPlayer.getInteracting() == null;
         boolean invFull = isInventoryFull();
 
         List<StatusCell> cells = new ArrayList<>();
@@ -65,30 +78,39 @@ public class StatusOverlay extends Overlay
         cells.add(new StatusCell("Idle?", isIdle));
         cells.add(new StatusCell("Inv Full?", invFull));
 
-        int totalWidth = cells.size() * CELL_WIDTH;
+        int totalWidth = cells.size() * cellWidth;
+        
+        // Draw Background
         graphics.setColor(BG_COLOR);
-        graphics.fillRect(0, 0, totalWidth, CELL_HEIGHT);
-        graphics.drawRect(0, 0, totalWidth, CELL_HEIGHT);
+        graphics.fillRect(0, 0, totalWidth, cellHeight);
+        graphics.setColor(Color.GRAY);
+        graphics.drawRect(0, 0, totalWidth, cellHeight);
 
         for (int i = 0; i < cells.size(); i++)
         {
             StatusCell cell = cells.get(i);
-            int xPos = i * CELL_WIDTH;
-            int boxX = xPos + (CELL_WIDTH / 2) - (BOX_SIZE / 2);
-            int boxY = 5;
+            int xPos = i * cellWidth;
+
+            // Draw status box
+            int boxX = xPos + (cellWidth / 2) - (boxSize / 2);
+            int boxY = (int) (5 * scale);
 
             graphics.setColor(cell.isActive ? COLOR_TRUE : COLOR_FALSE);
-            graphics.fillRect(boxX, boxY, BOX_SIZE, BOX_SIZE);
+            graphics.fillRect(boxX, boxY, boxSize, boxSize);
             graphics.setColor(Color.BLACK);
-            graphics.drawRect(boxX, boxY, BOX_SIZE, BOX_SIZE);
+            graphics.drawRect(boxX, boxY, boxSize, boxSize);
 
+            // Draw Text
             graphics.setColor(Color.WHITE);
-            drawCenteredString(graphics, cell.label, xPos, 35, CELL_WIDTH);
+            int textY = (int) (35 * scale);
+            drawCenteredString(graphics, cell.label, xPos, textY, cellWidth);
 
+            // Draw divider
             graphics.setColor(Color.GRAY);
-            graphics.drawLine(xPos + CELL_WIDTH, 0, xPos + CELL_WIDTH, CELL_HEIGHT);
+            graphics.drawLine(xPos + cellWidth, 0, xPos + cellWidth, cellHeight);
         }
-        return new Dimension(totalWidth, CELL_HEIGHT);
+
+        return new Dimension(totalWidth, cellHeight);
     }
 
     private boolean isAttackingCorrectTarget(Player player)
@@ -106,74 +128,45 @@ public class StatusOverlay extends Overlay
     }
 
     private boolean checkInventoryFor(String configList)
-        {
-            if (configList == null || configList.isEmpty()) return false;
-            
-            ItemContainer container = client.getItemContainer(InventoryID.INVENTORY);
-            if (container == null) return false;
-            
-            List<String> namesToCheck = Text.fromCSV(configList.toUpperCase());
-            
-            for (Item item : container.getItems())
-            {
-                if (item == null || item.getId() <= 0) continue;
-                
-                ItemComposition def = client.getItemDefinition(item.getId());
-                if (def == null) continue;
-                
-                String itemName = def.getName();
-                if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase())))
-                {
-                    return true;
-                }
-            }
-            return false;
+    {
+        if (configList == null || configList.isEmpty()) return false;
+        ItemContainer container = client.getItemContainer(InventoryID.INVENTORY);
+        if (container == null) return false;
+        List<String> namesToCheck = Text.fromCSV(configList.toUpperCase());
+        for (Item item : container.getItems()) {
+            if (item == null || item.getId() <= 0) continue;
+            ItemComposition def = client.getItemDefinition(item.getId());
+            if (def != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, def.getName().toUpperCase()))) return true;
         }
+        return false;
+    }
 
     private boolean areItemsOnGround()
-        {
-            String groundConfig = config.groundItemNames();
-            if (groundConfig == null || groundConfig.isEmpty()) return false;
-    
-            List<String> namesToCheck = Text.fromCSV(groundConfig.toUpperCase());
-            LocalPoint lp = client.getLocalPlayer().getLocalLocation();
-            if (lp == null) return false;
-    
-            int sceneX = lp.getSceneX();
-            int sceneY = lp.getSceneY();
-            int range = 15; // Increased range to 15 tiles
-            int plane = client.getPlane();
-            Tile[][][] tiles = client.getScene().getTiles();
-    
-            for (int dx = -range; dx <= range; dx++)
-            {
-                for (int dy = -range; dy <= range; dy++)
-                {
-                    int x = sceneX + dx;
-                    int y = sceneY + dy;
-    
-                    // Ensure we stay within the 0-103 scene boundaries
-                    if (x < 0 || x >= 104 || y < 0 || y >= 104) continue;
-    
-                    Tile tile = tiles[plane][x][y];
-                    if (tile == null || tile.getGroundItems() == null) continue;
-    
-                    for (TileItem ti : tile.getGroundItems())
-                    {
-                        ItemComposition def = client.getItemDefinition(ti.getId());
-                        if (def != null)
-                        {
-                            String itemName = def.getName();
-                            if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase())))
-                            {
-                                return true;
-                            }
-                        }
-                    }
+    {
+        String groundConfig = config.groundItemNames();
+        if (groundConfig == null || groundConfig.isEmpty()) return false;
+        List<String> namesToCheck = Text.fromCSV(groundConfig.toUpperCase());
+        LocalPoint lp = client.getLocalPlayer().getLocalLocation();
+        if (lp == null) return false;
+        int sceneX = lp.getSceneX();
+        int sceneY = lp.getSceneY();
+        int range = 15;
+        int plane = client.getPlane();
+        Tile[][][] tiles = client.getScene().getTiles();
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                int x = sceneX + dx; int y = sceneY + dy;
+                if (x < 0 || x >= 104 || y < 0 || y >= 104) continue;
+                Tile tile = tiles[plane][x][y];
+                if (tile == null || tile.getGroundItems() == null) continue;
+                for (TileItem ti : tile.getGroundItems()) {
+                    ItemComposition def = client.getItemDefinition(ti.getId());
+                    if (def != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, def.getName().toUpperCase()))) return true;
                 }
             }
-            return false;
         }
+        return false;
+    }
 
     private void drawCenteredString(Graphics2D g, String text, int x, int y, int width)
     {
