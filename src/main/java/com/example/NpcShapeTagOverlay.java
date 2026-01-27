@@ -9,6 +9,7 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 
@@ -25,13 +26,16 @@ public class NpcShapeTagOverlay extends Overlay
     private final NpcShapeTagConfig config;
 
     @Inject
-    private NpcShapeTagOverlay(Client client, NpcShapeTagConfig config)
-    {
-        this.client = client;
-        this.config = config;
-        setPosition(OverlayPosition.DYNAMIC);
-        setLayer(OverlayLayer.ABOVE_SCENE);
-    }
+        private NpcShapeTagOverlay(Client client, NpcShapeTagConfig config)
+        {
+            this.client = client;
+            this.config = config;
+            setPosition(OverlayPosition.DYNAMIC);
+            // "ABOVE_WIDGETS" forces it to draw over the game UI and Sprites
+            setLayer(OverlayLayer.UNDER_WIDGETS); 
+            // "HIGH" priority ensures it draws after other plugins
+            setPriority(OverlayPriority.HIGH);
+        }
 
     @Override
     public Dimension render(Graphics2D graphics)
