@@ -9,8 +9,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
     name = "NPC Shape Tags",
-    description = "Tags NPCs with custom shapes (Square, Circle, Star)",
-    tags = {"npc", "highlight", "tag", "shape"}
+    description = "Tags NPCs with custom shapes and tracks status",
+    tags = {"npc", "highlight", "tag", "shape", "status"}
 )
 public class NpcShapeTagPlugin extends Plugin
 {
@@ -18,7 +18,11 @@ public class NpcShapeTagPlugin extends Plugin
     private OverlayManager overlayManager;
 
     @Inject
-    private NpcShapeTagOverlay overlay;
+    private NpcShapeTagOverlay shapeOverlay;
+
+    // ADD THIS LINE
+    @Inject
+    private NpcStatusOverlay statusOverlay;
 
     @Inject
     private NpcShapeTagConfig config;
@@ -26,13 +30,17 @@ public class NpcShapeTagPlugin extends Plugin
     @Override
     protected void startUp() throws Exception
     {
-        overlayManager.add(overlay);
+        overlayManager.add(shapeOverlay);
+        // ADD THIS LINE
+        overlayManager.add(statusOverlay);
     }
 
     @Override
     protected void shutDown() throws Exception
     {
-        overlayManager.remove(overlay);
+        overlayManager.remove(shapeOverlay);
+        // ADD THIS LINE
+        overlayManager.remove(statusOverlay);
     }
 
     @Provides
