@@ -35,25 +35,33 @@ public class ShapeOverlay extends Overlay
     }
 
     @Override
-    public Dimension render(Graphics2D graphics)
-    {
-        String configNames = config.npcNames();
-        if (configNames == null || configNames.isEmpty()) return null;
-
-        List<String> targetNames = Text.fromCSV(configNames);
-        for (NPC npc : client.getNpcs())
+        public Dimension render(Graphics2D graphics)
         {
-            NPCComposition composition = npc.getTransformedComposition();
-            if (composition == null) continue;
-
-            String npcName = Text.removeTags(composition.getName()).toUpperCase();
-            if (targetNames.stream().anyMatch(target -> WildcardMatcher.matches(target.toUpperCase(), npcName)))
+            String configNames = config.npcNames();
+            if (configNames == null || configNames.isEmpty()) return null;
+    
+            List<String> targetNames = Text.fromCSV(configNames);
+            for (NPC npc : client.getNpcs())
             {
-                renderNpcShape(graphics, npc);
+                if (config.hideInCombat())
+                {
+                    if (npc.getInteracting() != null || npc.getHealthRatio() != -1)
+                    {
+                        continue;
+                    }
+                }
+                
+                NPCComposition composition = npc.getTransformedComposition();
+                if (composition == null) continue;
+    
+                String npcName = Text.removeTags(composition.getName()).toUpperCase();
+                if (targetNames.stream().anyMatch(target -> WildcardMatcher.matches(target.toUpperCase(), npcName)))
+                {
+                    renderNpcShape(graphics, npc);
+                }
             }
+            return null;
         }
-        return null;
-    }
 
     private void renderNpcShape(Graphics2D graphics, NPC npc)
     {
