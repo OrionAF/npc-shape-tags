@@ -38,4 +38,7 @@ public interface CombatStateConfig extends Config
 
     @ConfigItem(keyName = "overlayScale", name = "Overlay Scale", description = "Adjust the size of the status window (50% to 200%)", position = 8)
     default int overlayScale() { return 100; }
+
+    @ConfigItem(keyName = "hideInCombat", name = "Hide NPCs in Combat", description = "Do not tag NPCs that are currently interacting or have a health bar visible", position = 9)
+    default boolean hideInCombat() { return false; }
 }
