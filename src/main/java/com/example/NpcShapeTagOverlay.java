@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.npcshapetags;
+package com.example;
 
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
