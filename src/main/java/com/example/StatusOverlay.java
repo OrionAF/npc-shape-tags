@@ -106,35 +106,74 @@ public class StatusOverlay extends Overlay
     }
 
     private boolean checkInventoryFor(String configList)
-    {
-        ItemContainer container = client.getItemContainer(InventoryID.INVENTORY);
-        if (container == null) return false;
-        List<String> namesToCheck = Text.fromCSV(configList.toUpperCase());
-        for (Item item : container.getItems()) {
-            if (item.getId() == -1) continue;
-            String itemName = client.getItemDefinition(item.getId()).getName();
-            if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase()))) return true;
-        }
-        return false;
-    }
-
-    private boolean areItemsOnGround()
-    {
-        List<String> namesToCheck = Text.fromCSV(config.groundItemNames().toUpperCase());
-        int range = 10;
-        LocalPoint lp = client.getLocalPlayer().getLocalLocation();
-        for (int x = -range; x <= range; x++) {
-            for (int y = -range; y <= range; y++) {
-                Tile tile = client.getScene().getTiles()[client.getPlane()][client.getBaseX() + lp.getSceneX() + x][client.getBaseY() + lp.getSceneY() + y];
-                if (tile == null || tile.getGroundItems() == null) continue;
-                for (TileItem ti : tile.getGroundItems()) {
-                    String itemName = client.getItemDefinition(ti.getId()).getName();
-                    if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase()))) return true;
+        {
+            if (configList == null || configList.isEmpty()) return false;
+            
+            ItemContainer container = client.getItemContainer(InventoryID.INVENTORY);
+            if (container == null) return false;
+            
+            List<String> namesToCheck = Text.fromCSV(configList.toUpperCase());
+            
+            for (Item item : container.getItems())
+            {
+                if (item == null || item.getId() <= 0) continue;
+                
+                ItemComposition def = client.getItemDefinition(item.getId());
+                if (def == null) continue;
+                
+                String itemName = def.getName();
+                if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase())))
+                {
+                    return true;
                 }
             }
+            return false;
         }
-        return false;
-    }
+
+    private boolean areItemsOnGround()
+        {
+            String groundConfig = config.groundItemNames();
+            if (groundConfig == null || groundConfig.isEmpty()) return false;
+    
+            List<String> namesToCheck = Text.fromCSV(groundConfig.toUpperCase());
+            LocalPoint lp = client.getLocalPlayer().getLocalLocation();
+            if (lp == null) return false;
+    
+            int sceneX = lp.getSceneX();
+            int sceneY = lp.getSceneY();
+            int range = 15; // Increased range to 15 tiles
+            int plane = client.getPlane();
+            Tile[][][] tiles = client.getScene().getTiles();
+    
+            for (int dx = -range; dx <= range; dx++)
+            {
+                for (int dy = -range; dy <= range; dy++)
+                {
+                    int x = sceneX + dx;
+                    int y = sceneY + dy;
+    
+                    // Ensure we stay within the 0-103 scene boundaries
+                    if (x < 0 || x >= 104 || y < 0 || y >= 104) continue;
+    
+                    Tile tile = tiles[plane][x][y];
+                    if (tile == null || tile.getGroundItems() == null) continue;
+    
+                    for (TileItem ti : tile.getGroundItems())
+                    {
+                        ItemComposition def = client.getItemDefinition(ti.getId());
+                        if (def != null)
+                        {
+                            String itemName = def.getName();
+                            if (itemName != null && namesToCheck.stream().anyMatch(n -> WildcardMatcher.matches(n, itemName.toUpperCase())))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
 
     private void drawCenteredString(Graphics2D g, String text, int x, int y, int width)
     {
