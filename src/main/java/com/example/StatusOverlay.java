@@ -50,7 +50,7 @@ public class StatusOverlay extends Overlay
         boolean hasFood = checkInventoryFor(config.foodNames());
         boolean prayerAbove50 = client.getBoostedSkillLevel(Skill.PRAYER) > (client.getRealSkillLevel(Skill.PRAYER) / 2);
         boolean outOfPrayer = client.getBoostedSkillLevel(Skill.PRAYER) == 0;
-        boolean isIdle = localPlayer.getAnimation() == -1 || localPlayer.getAnimation() == 808;
+        boolean isIdle = localPlayer.getAnimation() == -1 && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation() && localPlayer.getInteracting() == null;
         boolean invFull = isInventoryFull();
 
         List<StatusCell> cells = new ArrayList<>();
