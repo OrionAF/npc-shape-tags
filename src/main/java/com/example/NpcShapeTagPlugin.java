@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.npcshapetags;
+package com.example;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
