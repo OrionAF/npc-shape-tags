@@ -69,4 +69,26 @@ public interface NpcShapeTagConfig extends Config
     {
         return false;
     }
+
+    @ConfigItem(
+        keyName = "foodNames",
+        name = "Food Names",
+        description = "Comma separated list of food names to check for (e.g. Shark, Manta ray)",
+        position = 6
+    )
+    default String foodNames()
+    {
+        return "Shark,Manta ray,Cooked karambwan";
+    }
+
+    @ConfigItem(
+        keyName = "groundItemNames",
+        name = "Ground Items",
+        description = "Comma separated list of ground items to check for",
+        position = 7
+    )
+    default String groundItemNames()
+    {
+        return "Coins,Bones";
+    }
 }
