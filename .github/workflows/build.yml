@@ -24,3 +24,9 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: npc-shape-tags-jar
+          path: build/libs/*.jar
