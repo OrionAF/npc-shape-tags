@@ -20,12 +20,14 @@ public class ShapeOverlay extends Overlay
 {
     private final Client client;
     private final CombatStateConfig config;
+    private final CombatStatePlugin plugin;
 
     @Inject
-    private ShapeOverlay(Client client, CombatStateConfig config)
+    private ShapeOverlay(Client client, CombatStateConfig config, CombatStatePlugin plugin)
     {
         this.client = client;
         this.config = config;
+        this.plugin = plugin;
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.UNDER_WIDGETS);
         setPriority(OverlayPriority.HIGH);
@@ -62,7 +64,6 @@ public class ShapeOverlay extends Overlay
                 if (lp != null)
                 {
                     Point p = Perspective.localToCanvas(client, lp, client.getPlane(), npc.getLogicalHeight() / 2);
-                    // Pass NPC specific settings
                     drawShapeAt(graphics, p, config.npcShape(), config.npcColor(), config.npcSize(), config.npcFilled());
                 }
             }
@@ -113,7 +114,6 @@ public class ShapeOverlay extends Overlay
                             if (itemNames.stream().anyMatch(n -> WildcardMatcher.matches(n.toUpperCase(), def.getName().toUpperCase())))
                             {
                                 Point p = Perspective.localToCanvas(client, tile.getLocalLocation(), plane, 0);
-                                // Pass Ground Item specific settings
                                 drawShapeAt(graphics, p, config.groundItemShape(), config.groundItemColor(), config.groundItemSize(), config.groundItemFilled());
                                 break;
                             }
@@ -152,6 +152,12 @@ public class ShapeOverlay extends Overlay
 
     private void checkAndDrawObject(Graphics2D graphics, TileObject obj, List<String> targets)
     {
+        // 1. Check if user wants to hide the interacted object
+        if (config.hideInteractingObject() && plugin.isObjectHidden(obj))
+        {
+            return;
+        }
+
         ObjectComposition def = client.getObjectDefinition(obj.getId());
         if (def == null) return;
         
@@ -165,12 +171,10 @@ public class ShapeOverlay extends Overlay
         if (targets.stream().anyMatch(t -> WildcardMatcher.matches(t.toUpperCase(), name)))
         {
             Point p = Perspective.localToCanvas(client, obj.getLocalLocation(), client.getPlane(), 50);
-            // Pass Object specific settings
             drawShapeAt(graphics, p, config.objectShape(), config.objectColor(), config.objectSize(), config.objectFilled());
         }
     }
 
-    // UPDATED: Now accepts specific visual settings instead of reading from config directly
     private void drawShapeAt(Graphics2D graphics, Point point, CombatStateConfig.Shape shapeType, Color color, int size, boolean filled)
     {
         if (point == null) return;
