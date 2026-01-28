@@ -33,7 +33,7 @@ public class StatusOverlay extends Overlay
     {
         this.client = client;
         this.config = config;
-        this.plugin = plugin; // Now receiving plugin instance
+        this.plugin = plugin;
         setPosition(OverlayPosition.TOP_LEFT);
         setPriority(OverlayPriority.HIGH);
     }
@@ -100,8 +100,13 @@ public class StatusOverlay extends Overlay
         // --- XP Cycle Logic ---
         if (config.showXpTracker()) {
             int count = plugin.getXpDropCount();
-            // Change color every 3 drops
-            boolean isWhitePhase = (count / 3) % 2 != 0;
+            int cycleLength = Math.max(1, config.xpCycleLength()); // Prevent divide by zero
+            
+            // Logic: 
+            // If length is 1:  0/1=0 (White), 1/1=1 (Red), 2/1=2 (White) -> Alternates every time.
+            // If length is 3:  0,1,2 (White), 3,4,5 (Red) -> Alternates every 3 drops.
+            boolean isWhitePhase = (count / cycleLength) % 2 == 0;
+            
             cells.add(new StatusCell("XP Cycle", isWhitePhase));
         }
 
