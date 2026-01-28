@@ -13,7 +13,6 @@ public interface CombatStateConfig extends Config
         SQUARE, CIRCLE, STAR
     }
 
-    // --- Shape Tag Settings ---
     @ConfigItem(keyName = "npcNames", name = "NPC Names", description = "NPCs to tag", position = 1)
     default String npcNames() { return ""; }
 
@@ -29,7 +28,6 @@ public interface CombatStateConfig extends Config
     @ConfigItem(keyName = "filled", name = "Fill Shape", description = "Fill the shape?", position = 5)
     default boolean filled() { return false; }
 
-    // --- Status Window Settings ---
     @ConfigItem(keyName = "foodNames", name = "Food Names", description = "Food to check for", position = 6)
     default String foodNames() { return "Cooked Karambwan, Lobster, Swordfish, Corrupted shark"; }
 
@@ -47,4 +45,34 @@ public interface CombatStateConfig extends Config
 
     @ConfigItem(keyName = "objectTags", name = "Tag Objects", description = "List of game objects to visually tag (e.g. Altar, Tree)", position = 11)
     default String objectTags() { return ""; }
+
+    @ConfigItem(keyName = "showInCombat", name = "Show 'In Combat'", description = "Toggle the In Combat status", position = 20)
+    default boolean showInCombat() { return true; }
+
+    @ConfigItem(keyName = "showAttacking", name = "Show 'Targeting?'", description = "Toggle the Attacking status", position = 21)
+    default boolean showAttacking() { return true; }
+
+    @ConfigItem(keyName = "showCorrectTarget", name = "Show 'Correct Target'", description = "Toggle the Correct Target status", position = 22)
+    default boolean showCorrectTarget() { return true; }
+
+    @ConfigItem(keyName = "showGroundItems", name = "Show 'Items on Ground'", description = "Toggle the Items on Ground status", position = 23)
+    default boolean showGroundItems() { return true; }
+
+    @ConfigItem(keyName = "showHp", name = "Show 'HP > 50%'", description = "Toggle the HP status", position = 24)
+    default boolean showHp() { return true; }
+
+    @ConfigItem(keyName = "showFood", name = "Show 'Has Food'", description = "Toggle the Food status", position = 25)
+    default boolean showFood() { return true; }
+
+    @ConfigItem(keyName = "showPrayer", name = "Show 'Prayer > 50%'", description = "Toggle the Prayer > 50% status", position = 26)
+    default boolean showPrayer() { return true; }
+
+    @ConfigItem(keyName = "showOutOfPrayer", name = "Show 'Out of Prayer'", description = "Toggle the Out of Prayer status", position = 27)
+    default boolean showOutOfPrayer() { return true; }
+
+    @ConfigItem(keyName = "showIdle", name = "Show 'Idle'", description = "Toggle the Idle status", position = 28)
+    default boolean showIdle() { return true; }
+
+    @ConfigItem(keyName = "showInvFull", name = "Show 'Inv Full'", description = "Toggle the Inventory Full status", position = 29)
+    default boolean showInvFull() { return true; }
 }
