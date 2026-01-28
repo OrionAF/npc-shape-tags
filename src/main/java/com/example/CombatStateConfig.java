@@ -49,8 +49,8 @@ public interface CombatStateConfig extends Config
     @ConfigItem(keyName = "showInCombat", name = "Show 'In Combat'", description = "Toggle the In Combat status", position = 20)
     default boolean showInCombat() { return true; }
 
-    @ConfigItem(keyName = "showAttacking", name = "Show 'Targeting?'", description = "Toggle the Attacking status", position = 21)
-    default boolean showAttacking() { return true; }
+    @ConfigItem(keyName = "showTargeting", name = "Show 'Targeting?'", description = "Toggle the Targeting status", position = 21)
+    default boolean showTargeting() { return true; }
 
     @ConfigItem(keyName = "showCorrectTarget", name = "Show 'Correct Target'", description = "Toggle the Correct Target status", position = 22)
     default boolean showCorrectTarget() { return true; }
