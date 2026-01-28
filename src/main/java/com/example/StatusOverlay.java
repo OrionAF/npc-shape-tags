@@ -17,7 +17,6 @@ public class StatusOverlay extends Overlay
     private final Client client;
     private final CombatStateConfig config;
 
-    // Base dimensions (at 100% scale)
     private static final int BASE_CELL_WIDTH = 100;
     private static final int BASE_CELL_HEIGHT = 45;
     private static final int BASE_BOX_SIZE = 15;
@@ -42,7 +41,6 @@ public class StatusOverlay extends Overlay
         Player localPlayer = client.getLocalPlayer();
         if (localPlayer == null) return null;
 
-        // Calculate Scale
         double scale = config.overlayScale() / 100.0;
         int cellWidth = (int) (BASE_CELL_WIDTH * scale);
         int cellHeight = (int) (BASE_CELL_HEIGHT * scale);
@@ -53,15 +51,13 @@ public class StatusOverlay extends Overlay
 
         List<StatusCell> cells = new ArrayList<>();
 
-        // --- Build the list based on config ---
-        
         if (config.showInCombat()) {
             boolean inCombat = localPlayer.getInteracting() != null;
             cells.add(new StatusCell("In Combat?", inCombat));
         }
 
-        if (config.showAttacking()) {
-            boolean isTargeting = localPlayer.getAnimation() != -1 && localPlayer.getAnimation() != 808;
+        if (config.showTargeting()) {
+            boolean isTargeting = localPlayer.getInteracting() instanceof NPC;
             cells.add(new StatusCell("Targeting?", isTargeting));
         }
 
@@ -71,7 +67,6 @@ public class StatusOverlay extends Overlay
         }
 
         if (config.showGroundItems()) {
-            // Only scan tiles if this is enabled (saves FPS)
             boolean itemsOnGround = areItemsOnGround();
             cells.add(new StatusCell("Items on Ground?", itemsOnGround));
         }
@@ -108,10 +103,8 @@ public class StatusOverlay extends Overlay
             cells.add(new StatusCell("Inv Full?", invFull));
         }
 
-        // If user disabled everything, draw nothing
         if (cells.isEmpty()) return null;
 
-        // --- Draw the Grid ---
         int totalWidth = cells.size() * cellWidth;
         
         graphics.setColor(BG_COLOR);
@@ -124,7 +117,6 @@ public class StatusOverlay extends Overlay
             StatusCell cell = cells.get(i);
             int xPos = i * cellWidth;
 
-            // Draw status box
             int boxX = xPos + (cellWidth / 2) - (boxSize / 2);
             int boxY = (int) (5 * scale);
 
@@ -133,12 +125,10 @@ public class StatusOverlay extends Overlay
             graphics.setColor(Color.BLACK);
             graphics.drawRect(boxX, boxY, boxSize, boxSize);
 
-            // Draw Text
             graphics.setColor(Color.WHITE);
             int textY = (int) (35 * scale);
             drawCenteredString(graphics, cell.label, xPos, textY, cellWidth);
 
-            // Draw divider
             graphics.setColor(Color.GRAY);
             graphics.drawLine(xPos + cellWidth, 0, xPos + cellWidth, cellHeight);
         }
