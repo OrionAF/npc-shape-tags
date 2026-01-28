@@ -4,7 +4,7 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
-import net.runelite.api.events.GameStateChanged; // Added Import
+import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.config.ConfigManager;
@@ -48,13 +48,9 @@ public class CombatStatePlugin extends Plugin
     @Subscribe
     public void onGameStateChanged(GameStateChanged event)
     {
-        // Reset trackers when we log in or hop worlds
         if (event.getGameState() == GameState.LOGGED_IN)
         {
             xpDropCount = 0;
-            
-            // Also good practice to clear the hidden object, 
-            // as IDs/Locations might differ on a new world/session.
             lastObjectClickPos = null;
             lastObjectClickId = -1;
         }
@@ -63,8 +59,16 @@ public class CombatStatePlugin extends Plugin
     @Subscribe
     public void onStatChanged(StatChanged event)
     {
-        // Increment counter on any XP drop
-        xpDropCount++;
+        // 1. Check which skill we are supposed to track
+        CombatStateConfig.TrackedSkill tracked = config.xpTrackedSkill();
+
+        // 2. If config is ANY, we count everything. 
+        //    If config is specific, we check if event skill matches.
+        if (tracked == CombatStateConfig.TrackedSkill.ANY || 
+            tracked.name().equals(event.getSkill().name()))
+        {
+            xpDropCount++;
+        }
     }
 
     @Subscribe
