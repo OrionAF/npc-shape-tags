@@ -31,7 +31,7 @@ public interface CombatStateConfig extends Config
 
     // --- Status Window Settings ---
     @ConfigItem(keyName = "foodNames", name = "Food Names", description = "Food to check for", position = 6)
-    default String foodNames() { return "Shark,Manta ray,Cooked karambwan"; }
+    default String foodNames() { return "Cooked Karambwan, Lobster, Swordfish, Corrupted shark"; }
 
     @ConfigItem(keyName = "groundItemNames", name = "Ground Items", description = "Ground items to check for", position = 7)
     default String groundItemNames() { return "Coins,Bones"; }
@@ -41,4 +41,10 @@ public interface CombatStateConfig extends Config
 
     @ConfigItem(keyName = "hideInCombat", name = "Hide NPCs in Combat", description = "Do not tag NPCs that are currently interacting or have a health bar visible", position = 9)
     default boolean hideInCombat() { return false; }
+
+    @ConfigItem(keyName = "groundItemTags", name = "Tag Ground Items", description = "List of ground items to visually tag with a shape", position = 10)
+    default String groundItemTags() { return ""; }
+
+    @ConfigItem(keyName = "objectTags", name = "Tag Objects", description = "List of game objects to visually tag (e.g. Altar, Tree)", position = 11)
+    default String objectTags() { return ""; }
 }
