@@ -16,7 +16,9 @@ public class StatusOverlay extends Overlay
 {
     private final Client client;
     private final CombatStateConfig config;
+    private final CombatStatePlugin plugin;
 
+    // Base dimensions
     private static final int BASE_CELL_WIDTH = 100;
     private static final int BASE_CELL_HEIGHT = 45;
     private static final int BASE_BOX_SIZE = 15;
@@ -27,10 +29,11 @@ public class StatusOverlay extends Overlay
     private static final Color BG_COLOR = new Color(0, 0, 0, 150);
 
     @Inject
-    private StatusOverlay(Client client, CombatStateConfig config)
+    private StatusOverlay(Client client, CombatStateConfig config, CombatStatePlugin plugin)
     {
         this.client = client;
         this.config = config;
+        this.plugin = plugin; // Now receiving plugin instance
         setPosition(OverlayPosition.TOP_LEFT);
         setPriority(OverlayPriority.HIGH);
     }
@@ -48,65 +51,64 @@ public class StatusOverlay extends Overlay
         int fontSize = (int) (BASE_FONT_SIZE * scale);
 
         graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, fontSize));
-
         List<StatusCell> cells = new ArrayList<>();
 
+        // --- Standard Logic ---
         if (config.showInCombat()) {
             boolean inCombat = localPlayer.getInteracting() != null;
             cells.add(new StatusCell("In Combat?", inCombat));
         }
-
-        if (config.showTargeting()) {
+        if (config.showAttacking()) {
             boolean isTargeting = localPlayer.getInteracting() instanceof NPC;
             cells.add(new StatusCell("Targeting?", isTargeting));
         }
-
         if (config.showCorrectTarget()) {
             boolean correctTarget = isAttackingCorrectTarget(localPlayer);
             cells.add(new StatusCell("Correct Target?", correctTarget));
         }
-
         if (config.showGroundItems()) {
             boolean itemsOnGround = areItemsOnGround();
             cells.add(new StatusCell("Items on Ground?", itemsOnGround));
         }
-
         if (config.showHp()) {
             boolean healthAbove50 = client.getBoostedSkillLevel(Skill.HITPOINTS) > (client.getRealSkillLevel(Skill.HITPOINTS) / 2);
             cells.add(new StatusCell("HP > 50%?", healthAbove50));
         }
-
         if (config.showFood()) {
             boolean hasFood = checkInventoryFor(config.foodNames());
             cells.add(new StatusCell("Has Food?", hasFood));
         }
-
         if (config.showPrayer()) {
             boolean prayerAbove50 = client.getBoostedSkillLevel(Skill.PRAYER) > (client.getRealSkillLevel(Skill.PRAYER) / 2);
             cells.add(new StatusCell("Prayer > 50%?", prayerAbove50));
         }
-
         if (config.showOutOfPrayer()) {
             boolean outOfPrayer = client.getBoostedSkillLevel(Skill.PRAYER) == 0;
             cells.add(new StatusCell("Out of Prayer?", outOfPrayer));
         }
-
         if (config.showIdle()) {
             boolean isIdle = localPlayer.getAnimation() == -1 
                 && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation()
                 && localPlayer.getInteracting() == null;
             cells.add(new StatusCell("Idle?", isIdle));
         }
-
         if (config.showInvFull()) {
             boolean invFull = isInventoryFull();
             cells.add(new StatusCell("Inv Full?", invFull));
         }
 
+        // --- XP Cycle Logic ---
+        if (config.showXpTracker()) {
+            int count = plugin.getXpDropCount();
+            // Logic: 0 -> RED, 1 -> WHITE, 2 -> WHITE, 3 -> RED (and resets logically 3=0 mod 3)
+            boolean isWhitePhase = (count % 3 != 0);
+            cells.add(new StatusCell("XP Cycle", isWhitePhase));
+        }
+
         if (cells.isEmpty()) return null;
 
+        // Draw Grid
         int totalWidth = cells.size() * cellWidth;
-        
         graphics.setColor(BG_COLOR);
         graphics.fillRect(0, 0, totalWidth, cellHeight);
         graphics.setColor(Color.GRAY);
@@ -116,7 +118,6 @@ public class StatusOverlay extends Overlay
         {
             StatusCell cell = cells.get(i);
             int xPos = i * cellWidth;
-
             int boxX = xPos + (cellWidth / 2) - (boxSize / 2);
             int boxY = (int) (5 * scale);
 
@@ -132,7 +133,6 @@ public class StatusOverlay extends Overlay
             graphics.setColor(Color.GRAY);
             graphics.drawLine(xPos + cellWidth, 0, xPos + cellWidth, cellHeight);
         }
-
         return new Dimension(totalWidth, cellHeight);
     }
 
