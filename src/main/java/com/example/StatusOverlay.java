@@ -100,8 +100,8 @@ public class StatusOverlay extends Overlay
         // --- XP Cycle Logic ---
         if (config.showXpTracker()) {
             int count = plugin.getXpDropCount();
-            // Logic: 0 -> RED, 1 -> WHITE, 2 -> WHITE, 3 -> RED (and resets logically 3=0 mod 3)
-            boolean isWhitePhase = (count % 3 != 0);
+            // Even numbers Red, Odd numbers White
+            boolean isWhitePhase = (count % 2 != 0); 
             cells.add(new StatusCell("XP Cycle", isWhitePhase));
         }
 
