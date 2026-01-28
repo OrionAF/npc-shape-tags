@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.events.GameStateChanged; // Added Import
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.config.ConfigManager;
@@ -45,6 +46,21 @@ public class CombatStatePlugin extends Plugin
     }
 
     @Subscribe
+    public void onGameStateChanged(GameStateChanged event)
+    {
+        // Reset trackers when we log in or hop worlds
+        if (event.getGameState() == GameState.LOGGED_IN)
+        {
+            xpDropCount = 0;
+            
+            // Also good practice to clear the hidden object, 
+            // as IDs/Locations might differ on a new world/session.
+            lastObjectClickPos = null;
+            lastObjectClickId = -1;
+        }
+    }
+
+    @Subscribe
     public void onStatChanged(StatChanged event)
     {
         // Increment counter on any XP drop
@@ -54,7 +70,6 @@ public class CombatStatePlugin extends Plugin
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event)
     {
-        // Logic to track if we clicked a Game Object
         MenuAction action = event.getMenuAction();
         
         if (action == MenuAction.GAME_OBJECT_FIRST_OPTION ||
@@ -63,23 +78,18 @@ public class CombatStatePlugin extends Plugin
             action == MenuAction.GAME_OBJECT_FOURTH_OPTION ||
             action == MenuAction.GAME_OBJECT_FIFTH_OPTION)
         {
-            // Store the ID and Location of the object we just clicked
             lastObjectClickId = event.getId();
-            
-            // Convert scene X/Y (param0/param1) to LocalPoint
             int sceneX = event.getParam0();
             int sceneY = event.getParam1();
             lastObjectClickPos = LocalPoint.fromScene(sceneX, sceneY, client.getScene());
         }
         else if (action == MenuAction.WALK || action == MenuAction.WIDGET_TARGET_ON_WIDGET)
         {
-            // If we walk somewhere else or click UI, clear the hidden object
             lastObjectClickPos = null;
             lastObjectClickId = -1;
         }
     }
 
-    // Getters for the Overlays to use
     public int getXpDropCount()
     {
         return xpDropCount;
@@ -88,10 +98,8 @@ public class CombatStatePlugin extends Plugin
     public boolean isObjectHidden(TileObject obj)
     {
         if (lastObjectClickPos == null || obj == null) return false;
-        
-        // If IDs match AND locations match, it's the one we clicked
         return obj.getId() == lastObjectClickId && 
-               obj.getLocalLocation().distanceTo(lastObjectClickPos) < 1; // Strict match
+               obj.getLocalLocation().distanceTo(lastObjectClickPos) < 1; 
     }
 
     @Provides
