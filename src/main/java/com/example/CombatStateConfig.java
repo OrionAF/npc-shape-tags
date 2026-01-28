@@ -13,66 +13,109 @@ public interface CombatStateConfig extends Config
         SQUARE, CIRCLE, STAR
     }
 
-    @ConfigItem(keyName = "npcNames", name = "NPC Names", description = "NPCs to tag", position = 1)
+    // ------------------------------------------------------------
+    // NPC Visual Settings
+    // ------------------------------------------------------------
+
+    @ConfigItem(keyName = "npcNames", name = "NPC Names", description = "NPCs to tag (logic also uses this)", position = 1)
     default String npcNames() { return ""; }
 
-    @ConfigItem(keyName = "shape", name = "Shape", description = "Shape to render", position = 2)
-    default Shape shape() { return Shape.STAR; }
+    @ConfigItem(keyName = "npcShape", name = "NPC Shape", description = "Shape for NPCs", position = 2)
+    default Shape npcShape() { return Shape.STAR; }
 
-    @ConfigItem(keyName = "color", name = "Color", description = "Shape color", position = 3)
-    default Color color() { return Color.CYAN; }
+    @ConfigItem(keyName = "npcColor", name = "NPC Color", description = "Color for NPCs", position = 3)
+    default Color npcColor() { return Color.CYAN; }
 
-    @ConfigItem(keyName = "size", name = "Size", description = "Shape size", position = 4)
-    default int size() { return 20; }
+    @ConfigItem(keyName = "npcSize", name = "NPC Size", description = "Size for NPC shapes", position = 4)
+    default int npcSize() { return 20; }
 
-    @ConfigItem(keyName = "filled", name = "Fill Shape", description = "Fill the shape?", position = 5)
-    default boolean filled() { return false; }
+    @ConfigItem(keyName = "npcFilled", name = "NPC Fill", description = "Fill the NPC shape?", position = 5)
+    default boolean npcFilled() { return false; }
 
-    @ConfigItem(keyName = "foodNames", name = "Food Names", description = "Food to check for", position = 6)
-    default String foodNames() { return "Cooked Karambwan, Lobster, Swordfish, Corrupted shark"; }
-
-    @ConfigItem(keyName = "groundItemNames", name = "Ground Items", description = "Ground items to check for", position = 7)
-    default String groundItemNames() { return "Coins,Bones"; }
-
-    @ConfigItem(keyName = "overlayScale", name = "Overlay Scale", description = "Adjust the size of the status window (50% to 200%)", position = 8)
-    default int overlayScale() { return 100; }
-
-    @ConfigItem(keyName = "hideInCombat", name = "Hide NPCs in Combat", description = "Do not tag NPCs that are currently interacting or have a health bar visible", position = 9)
+    @ConfigItem(keyName = "hideInCombat", name = "Hide NPCs in Combat", description = "Do not tag NPCs that are currently interacting", position = 6)
     default boolean hideInCombat() { return false; }
 
-    @ConfigItem(keyName = "groundItemTags", name = "Tag Ground Items", description = "List of ground items to visually tag with a shape", position = 10)
+
+    // ------------------------------------------------------------
+    // Ground Item Visual Settings
+    // ------------------------------------------------------------
+
+    @ConfigItem(keyName = "groundItemTags", name = "Ground Item Tags", description = "List of ground items to visually tag", position = 10)
     default String groundItemTags() { return ""; }
 
-    @ConfigItem(keyName = "objectTags", name = "Tag Objects", description = "List of game objects to visually tag (e.g. Altar, Tree)", position = 11)
+    @ConfigItem(keyName = "groundItemShape", name = "Item Shape", description = "Shape for Ground Items", position = 11)
+    default Shape groundItemShape() { return Shape.SQUARE; }
+
+    @ConfigItem(keyName = "groundItemColor", name = "Item Color", description = "Color for Ground Items", position = 12)
+    default Color groundItemColor() { return Color.ORANGE; }
+
+    @ConfigItem(keyName = "groundItemSize", name = "Item Size", description = "Size for Ground Item shapes", position = 13)
+    default int groundItemSize() { return 15; }
+
+    @ConfigItem(keyName = "groundItemFilled", name = "Item Fill", description = "Fill the Ground Item shape?", position = 14)
+    default boolean groundItemFilled() { return false; }
+
+
+    // ------------------------------------------------------------
+    // Object Visual Settings
+    // ------------------------------------------------------------
+
+    @ConfigItem(keyName = "objectTags", name = "Object Tags", description = "List of objects to visually tag", position = 20)
     default String objectTags() { return ""; }
 
-    @ConfigItem(keyName = "showInCombat", name = "Show 'In Combat'", description = "Toggle the In Combat status", position = 20)
+    @ConfigItem(keyName = "objectShape", name = "Object Shape", description = "Shape for Objects", position = 21)
+    default Shape objectShape() { return Shape.CIRCLE; }
+
+    @ConfigItem(keyName = "objectColor", name = "Object Color", description = "Color for Objects", position = 22)
+    default Color objectColor() { return Color.GREEN; }
+
+    @ConfigItem(keyName = "objectSize", name = "Object Size", description = "Size for Object shapes", position = 23)
+    default int objectSize() { return 30; }
+
+    @ConfigItem(keyName = "objectFilled", name = "Object Fill", description = "Fill the Object shape?", position = 24)
+    default boolean objectFilled() { return false; }
+
+
+    // ------------------------------------------------------------
+    // Status Window Logic
+    // ------------------------------------------------------------
+
+    @ConfigItem(keyName = "foodNames", name = "Food Names (Logic)", description = "Food to check for status box", position = 30)
+    default String foodNames() { return "Cooked Karambwan, Lobster, Swordfish, Corrupted shark"; }
+
+    @ConfigItem(keyName = "groundItemNames", name = "Ground Items (Logic)", description = "Ground items to check for status box", position = 31)
+    default String groundItemNames() { return "Coins,Bones"; }
+
+    @ConfigItem(keyName = "overlayScale", name = "Overlay Scale", description = "Adjust the size of the status window", position = 32)
+    default int overlayScale() { return 100; }
+
+    @ConfigItem(keyName = "showInCombat", name = "Show 'In Combat'", description = "Toggle status", position = 40)
     default boolean showInCombat() { return true; }
 
-    @ConfigItem(keyName = "showTargeting", name = "Show 'Targeting?'", description = "Toggle the Targeting status", position = 21)
-    default boolean showTargeting() { return true; }
+    @ConfigItem(keyName = "showAttacking", name = "Show 'Targeting?'", description = "Toggle status", position = 41)
+    default boolean showAttacking() { return true; }
 
-    @ConfigItem(keyName = "showCorrectTarget", name = "Show 'Correct Target'", description = "Toggle the Correct Target status", position = 22)
+    @ConfigItem(keyName = "showCorrectTarget", name = "Show 'Correct Target'", description = "Toggle status", position = 42)
     default boolean showCorrectTarget() { return true; }
 
-    @ConfigItem(keyName = "showGroundItems", name = "Show 'Items on Ground'", description = "Toggle the Items on Ground status", position = 23)
+    @ConfigItem(keyName = "showGroundItems", name = "Show 'Items on Ground'", description = "Toggle status", position = 43)
     default boolean showGroundItems() { return true; }
 
-    @ConfigItem(keyName = "showHp", name = "Show 'HP > 50%'", description = "Toggle the HP status", position = 24)
+    @ConfigItem(keyName = "showHp", name = "Show 'HP > 50%'", description = "Toggle status", position = 44)
     default boolean showHp() { return true; }
 
-    @ConfigItem(keyName = "showFood", name = "Show 'Has Food'", description = "Toggle the Food status", position = 25)
+    @ConfigItem(keyName = "showFood", name = "Show 'Has Food'", description = "Toggle status", position = 45)
     default boolean showFood() { return true; }
 
-    @ConfigItem(keyName = "showPrayer", name = "Show 'Prayer > 50%'", description = "Toggle the Prayer > 50% status", position = 26)
+    @ConfigItem(keyName = "showPrayer", name = "Show 'Prayer > 50%'", description = "Toggle status", position = 46)
     default boolean showPrayer() { return true; }
 
-    @ConfigItem(keyName = "showOutOfPrayer", name = "Show 'Out of Prayer'", description = "Toggle the Out of Prayer status", position = 27)
+    @ConfigItem(keyName = "showOutOfPrayer", name = "Show 'Out of Prayer'", description = "Toggle status", position = 47)
     default boolean showOutOfPrayer() { return true; }
 
-    @ConfigItem(keyName = "showIdle", name = "Show 'Idle'", description = "Toggle the Idle status", position = 28)
+    @ConfigItem(keyName = "showIdle", name = "Show 'Idle'", description = "Toggle status", position = 48)
     default boolean showIdle() { return true; }
 
-    @ConfigItem(keyName = "showInvFull", name = "Show 'Inv Full'", description = "Toggle the Inventory Full status", position = 29)
+    @ConfigItem(keyName = "showInvFull", name = "Show 'Inv Full'", description = "Toggle status", position = 49)
     default boolean showInvFull() { return true; }
 }
