@@ -9,6 +9,11 @@ import java.awt.Color;
 public interface CombatStateConfig extends Config
 {
     enum Shape { SQUARE, CIRCLE, STAR }
+    
+    // Enum for the dropdown menu
+    enum TrackedSkill { 
+        ANY, ATTACK, STRENGTH, DEFENCE, RANGED, MAGIC, HITPOINTS, PRAYER 
+    }
 
     // --- NPC Settings ---
     @ConfigItem(keyName = "npcNames", name = "NPC Names", description = "NPCs to tag", position = 1)
@@ -79,6 +84,14 @@ public interface CombatStateConfig extends Config
     default boolean showIdle() { return true; }
     @ConfigItem(keyName = "showInvFull", name = "Show 'Inv Full'", description = "Toggle status", position = 49)
     default boolean showInvFull() { return true; }
-    @ConfigItem(keyName = "showXpTracker", name = "Show 'XP Cycle'", description = "Shows WHITE on 1-2 hits, RED on 3rd hit", position = 50)
+    
+    // --- XP Cycle Settings ---
+    @ConfigItem(keyName = "showXpTracker", name = "Show 'XP Cycle'", description = "Enable the XP Tracker box", position = 50)
     default boolean showXpTracker() { return true; }
+
+    @ConfigItem(keyName = "xpTrackedSkill", name = "XP Skill", description = "Which skill to track for the cycle", position = 51)
+    default TrackedSkill xpTrackedSkill() { return TrackedSkill.ANY; }
+
+    @ConfigItem(keyName = "xpCycleLength", name = "XP Cycle Length", description = "How many drops before color switch? (1 = alternate every time)", position = 52)
+    default int xpCycleLength() { return 1; }
 }
