@@ -49,38 +49,71 @@ public class StatusOverlay extends Overlay
         int boxSize = (int) (BASE_BOX_SIZE * scale);
         int fontSize = (int) (BASE_FONT_SIZE * scale);
 
-        // Update Font based on scale
         graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, fontSize));
 
-        // --- Logic Checks ---
-        boolean inCombat = localPlayer.getInteracting() != null;
-        boolean isAttacking = localPlayer.getAnimation() != -1 && localPlayer.getAnimation() != 808;
-        boolean correctTarget = isAttackingCorrectTarget(localPlayer);
-        boolean itemsOnGround = areItemsOnGround();
-        boolean healthAbove50 = client.getBoostedSkillLevel(Skill.HITPOINTS) > (client.getRealSkillLevel(Skill.HITPOINTS) / 2);
-        boolean hasFood = checkInventoryFor(config.foodNames());
-        boolean prayerAbove50 = client.getBoostedSkillLevel(Skill.PRAYER) > (client.getRealSkillLevel(Skill.PRAYER) / 2);
-        boolean outOfPrayer = client.getBoostedSkillLevel(Skill.PRAYER) == 0;
-        boolean isIdle = localPlayer.getAnimation() == -1 
-            && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation()
-            && localPlayer.getInteracting() == null;
-        boolean invFull = isInventoryFull();
-
         List<StatusCell> cells = new ArrayList<>();
-        cells.add(new StatusCell("In Combat?", inCombat));
-        cells.add(new StatusCell("Attacking?", isAttacking));
-        cells.add(new StatusCell("Correct Target?", correctTarget));
-        cells.add(new StatusCell("Items on Ground?", itemsOnGround));
-        cells.add(new StatusCell("HP > 50%?", healthAbove50));
-        cells.add(new StatusCell("Has Food?", hasFood));
-        cells.add(new StatusCell("Prayer > 50%?", prayerAbove50));
-        cells.add(new StatusCell("Out of Prayer?", outOfPrayer));
-        cells.add(new StatusCell("Idle?", isIdle));
-        cells.add(new StatusCell("Inv Full?", invFull));
 
+        // --- Build the list based on config ---
+        
+        if (config.showInCombat()) {
+            boolean inCombat = localPlayer.getInteracting() != null;
+            cells.add(new StatusCell("In Combat?", inCombat));
+        }
+
+        if (config.showAttacking()) {
+            boolean isTargeting = localPlayer.getAnimation() != -1 && localPlayer.getAnimation() != 808;
+            cells.add(new StatusCell("Targeting?", isTargeting));
+        }
+
+        if (config.showCorrectTarget()) {
+            boolean correctTarget = isAttackingCorrectTarget(localPlayer);
+            cells.add(new StatusCell("Correct Target?", correctTarget));
+        }
+
+        if (config.showGroundItems()) {
+            // Only scan tiles if this is enabled (saves FPS)
+            boolean itemsOnGround = areItemsOnGround();
+            cells.add(new StatusCell("Items on Ground?", itemsOnGround));
+        }
+
+        if (config.showHp()) {
+            boolean healthAbove50 = client.getBoostedSkillLevel(Skill.HITPOINTS) > (client.getRealSkillLevel(Skill.HITPOINTS) / 2);
+            cells.add(new StatusCell("HP > 50%?", healthAbove50));
+        }
+
+        if (config.showFood()) {
+            boolean hasFood = checkInventoryFor(config.foodNames());
+            cells.add(new StatusCell("Has Food?", hasFood));
+        }
+
+        if (config.showPrayer()) {
+            boolean prayerAbove50 = client.getBoostedSkillLevel(Skill.PRAYER) > (client.getRealSkillLevel(Skill.PRAYER) / 2);
+            cells.add(new StatusCell("Prayer > 50%?", prayerAbove50));
+        }
+
+        if (config.showOutOfPrayer()) {
+            boolean outOfPrayer = client.getBoostedSkillLevel(Skill.PRAYER) == 0;
+            cells.add(new StatusCell("Out of Prayer?", outOfPrayer));
+        }
+
+        if (config.showIdle()) {
+            boolean isIdle = localPlayer.getAnimation() == -1 
+                && localPlayer.getPoseAnimation() == localPlayer.getIdlePoseAnimation()
+                && localPlayer.getInteracting() == null;
+            cells.add(new StatusCell("Idle?", isIdle));
+        }
+
+        if (config.showInvFull()) {
+            boolean invFull = isInventoryFull();
+            cells.add(new StatusCell("Inv Full?", invFull));
+        }
+
+        // If user disabled everything, draw nothing
+        if (cells.isEmpty()) return null;
+
+        // --- Draw the Grid ---
         int totalWidth = cells.size() * cellWidth;
         
-        // Draw Background
         graphics.setColor(BG_COLOR);
         graphics.fillRect(0, 0, totalWidth, cellHeight);
         graphics.setColor(Color.GRAY);
