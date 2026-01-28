@@ -58,7 +58,7 @@ public class StatusOverlay extends Overlay
             boolean inCombat = localPlayer.getInteracting() != null;
             cells.add(new StatusCell("In Combat?", inCombat));
         }
-        if (config.showAttacking()) {
+        if (config.showTargeting()) {
             boolean isTargeting = localPlayer.getInteracting() instanceof NPC;
             cells.add(new StatusCell("Targeting?", isTargeting));
         }
