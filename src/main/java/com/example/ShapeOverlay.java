@@ -9,6 +9,7 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 import javax.inject.Inject;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -33,12 +34,8 @@ public class ShapeOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        // 1. Render NPCs
         renderNpcs(graphics);
-
-        // 2. Render Ground Items and Objects (Scan nearby tiles)
         renderTiles(graphics);
-
         return null;
     }
 
@@ -61,12 +58,12 @@ public class ShapeOverlay extends Overlay
             String npcName = Text.removeTags(composition.getName()).toUpperCase();
             if (targetNames.stream().anyMatch(target -> WildcardMatcher.matches(target.toUpperCase(), npcName)))
             {
-                // Calculate NPC Center
                 LocalPoint lp = npc.getLocalLocation();
                 if (lp != null)
                 {
                     Point p = Perspective.localToCanvas(client, lp, client.getPlane(), npc.getLogicalHeight() / 2);
-                    drawShapeAt(graphics, p);
+                    // Pass NPC specific settings
+                    drawShapeAt(graphics, p, config.npcShape(), config.npcColor(), config.npcSize(), config.npcFilled());
                 }
             }
         }
@@ -89,7 +86,7 @@ public class ShapeOverlay extends Overlay
 
         int sceneX = lp.getSceneX();
         int sceneY = lp.getSceneY();
-        int radius = 15; // Scan radius (save performance)
+        int radius = 15;
         Tile[][][] tiles = client.getScene().getTiles();
         int plane = client.getPlane();
 
@@ -105,7 +102,7 @@ public class ShapeOverlay extends Overlay
                 Tile tile = tiles[plane][tileX][tileY];
                 if (tile == null) continue;
 
-                // --- Check Ground Items ---
+                // --- Ground Items ---
                 if (checkItems && tile.getGroundItems() != null)
                 {
                     for (TileItem item : tile.getGroundItems())
@@ -116,14 +113,15 @@ public class ShapeOverlay extends Overlay
                             if (itemNames.stream().anyMatch(n -> WildcardMatcher.matches(n.toUpperCase(), def.getName().toUpperCase())))
                             {
                                 Point p = Perspective.localToCanvas(client, tile.getLocalLocation(), plane, 0);
-                                drawShapeAt(graphics, p);
-                                break; // Only tag once per tile if multiple items match
+                                // Pass Ground Item specific settings
+                                drawShapeAt(graphics, p, config.groundItemShape(), config.groundItemColor(), config.groundItemSize(), config.groundItemFilled());
+                                break;
                             }
                         }
                     }
                 }
 
-                // --- Check Game Objects ---
+                // --- Objects ---
                 if (checkObjects)
                 {
                     renderGameObject(graphics, tile.getGameObjects(), objectNames);
@@ -135,12 +133,10 @@ public class ShapeOverlay extends Overlay
         }
     }
 
-    // Helper to handle single object or arrays of objects
     private void renderGameObject(Graphics2D graphics, Object objectOrArray, List<String> targets)
     {
         if (objectOrArray == null) return;
 
-        // Handle Array of GameObjects
         if (objectOrArray instanceof GameObject[])
         {
             for (GameObject obj : (GameObject[]) objectOrArray)
@@ -148,7 +144,6 @@ public class ShapeOverlay extends Overlay
                 if (obj != null) checkAndDrawObject(graphics, obj, targets);
             }
         }
-        // Handle Single Object (Wall, Ground, Dec)
         else if (objectOrArray instanceof TileObject)
         {
             checkAndDrawObject(graphics, (TileObject) objectOrArray, targets);
@@ -160,7 +155,6 @@ public class ShapeOverlay extends Overlay
         ObjectComposition def = client.getObjectDefinition(obj.getId());
         if (def == null) return;
         
-        // Handle impostors (changing objects like farming patches/doors)
         if (def.getImpostorIds() != null)
         {
             def = def.getImpostor();
@@ -170,22 +164,21 @@ public class ShapeOverlay extends Overlay
         String name = Text.removeTags(def.getName()).toUpperCase();
         if (targets.stream().anyMatch(t -> WildcardMatcher.matches(t.toUpperCase(), name)))
         {
-            // Objects usually look better if we lift the shape up slightly (e.g. 50 units)
             Point p = Perspective.localToCanvas(client, obj.getLocalLocation(), client.getPlane(), 50);
-            drawShapeAt(graphics, p);
+            // Pass Object specific settings
+            drawShapeAt(graphics, p, config.objectShape(), config.objectColor(), config.objectSize(), config.objectFilled());
         }
     }
 
-    // --- Core Drawing Logic (Shared by NPCs, Items, and Objects) ---
-    private void drawShapeAt(Graphics2D graphics, Point point)
+    // UPDATED: Now accepts specific visual settings instead of reading from config directly
+    private void drawShapeAt(Graphics2D graphics, Point point, CombatStateConfig.Shape shapeType, Color color, int size, boolean filled)
     {
         if (point == null) return;
 
-        graphics.setColor(config.color());
-        int size = config.size();
+        graphics.setColor(color);
         Shape shapeToDraw = null;
 
-        switch (config.shape())
+        switch (shapeType)
         {
             case SQUARE:
                 shapeToDraw = new java.awt.geom.Rectangle2D.Float(point.getX() - size/2f, point.getY() - size/2f, size, size);
@@ -200,7 +193,7 @@ public class ShapeOverlay extends Overlay
 
         if (shapeToDraw != null)
         {
-            if (config.filled()) graphics.fill(shapeToDraw);
+            if (filled) graphics.fill(shapeToDraw);
             else graphics.draw(shapeToDraw);
         }
     }
